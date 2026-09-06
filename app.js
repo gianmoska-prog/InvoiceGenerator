@@ -20,7 +20,7 @@
     documentType: $('documentType'), status: $('status'), invoiceNumber: $('invoiceNumber'),
     issueDate: $('issueDate'), dueDate: $('dueDate'), datePaid: $('datePaid'), currency: $('currency'),
     sendTo: $('sendTo'), documentClass: $('documentClass'), issuedBy: $('issuedBy'), recipient: $('recipient'),
-    paymentMethod: $('paymentMethod'), reference: $('reference'), purpose: $('purpose'), notes: $('notes'),
+    paymentMethod: $('paymentMethod'), reference: $('reference'), notes: $('notes'),
     taxRate: $('taxRate'), iban: $('iban'), paymentReference: $('paymentReference'), authorisedBy: $('authorisedBy'),
     authorisedRole: $('authorisedRole')
   };
@@ -126,7 +126,6 @@
     $('previewIssuedBy').classList.add('party-text');
     renderParty($('previewRecipient'), els.recipient.value);
     $('previewRecipient').classList.add('party-text');
-    $('previewPurpose').textContent = els.purpose.value || els.reference.value || '—';
     $('previewNotes').textContent = els.notes.value || '—';
     $('previewGrandTotal').textContent = money(calc.total);
     $('previewSubtotal').textContent = money(calc.subtotal);
@@ -174,11 +173,20 @@
 
   function renderParty(target, value){
     const [name,...lines]=value.split('\n');
-    target.innerHTML=`<div class="party-name">${escapeHtml(name)}</div><div class="party-address">${safeTextToHtml(lines.join('\n'))}</div>`;
+    target.innerHTML=`<div class="party-name${name.trim().toUpperCase() === 'MOSCATELLI' ? ' brand-word' : ''}">${escapeHtml(name)}</div><div class="party-address">${safeTextToHtml(lines.join('\n'))}</div>`;
+  }
+
+  function correctLegacyDefaults(data){
+    const corrected={...data};
+    if(corrected.authorisedBy === 'Lorenzo Moscatelli') corrected.authorisedBy='Gianluca Moscatelli';
+    if(corrected.iban === 'IT00 1234 5678 9012 3456 7890') corrected.iban='IT30P0306939170100000007557';
+    delete corrected.purpose;
+    return corrected;
   }
 
   function applyData(data){
     if(!data) return;
+    data=correctLegacyDefaults(data);
     Object.keys(els).forEach(key => { if(data[key] !== undefined && data[key] !== null) els[key].value = data[key]; });
     items = Array.isArray(data.items) && data.items.length ? data.items.filter(i => i && typeof i === 'object').map(i=>({description:String(i.description ?? ''),quantity:Number.isFinite(Number(i.quantity)) ? Math.max(0,Number(i.quantity)) : 0,unitPrice:Number.isFinite(Number(i.unitPrice)) ? Math.max(0,Number(i.unitPrice)) : 0})) : initialItems();
     if(!items.length) items=initialItems();
@@ -294,7 +302,7 @@
     toast('PDF downloaded; your mail application is opening. Attach the PDF before sending.');
   }
 
-  function getArchive(){ try { const data=JSON.parse(localStorage.getItem(ARCHIVE_KEY) || '[]'); if(!Array.isArray(data)) throw new Error('Invalid archive'); return data.filter(d=>d && typeof d==='object' && typeof d.id==='string'); } catch { toast('Local archive cannot be read. Existing storage has been preserved.'); return null; } }
+  function getArchive(){ try { const data=JSON.parse(localStorage.getItem(ARCHIVE_KEY) || '[]'); if(!Array.isArray(data)) throw new Error('Invalid archive'); return data.filter(d=>d && typeof d==='object' && typeof d.id==='string').map(correctLegacyDefaults); } catch { toast('Local archive cannot be read. Existing storage has been preserved.'); return null; } }
   function setArchive(arr){ try { localStorage.setItem(ARCHIVE_KEY, JSON.stringify(arr)); return true; } catch { toast('Archive could not be saved. Download a PDF to keep this document.'); return false; } }
   function archiveCurrent(){
     if(!generate()) return;
@@ -434,8 +442,8 @@
     els.issueDate.value=todayISO(); els.dueDate.value=offsetISO(30); els.datePaid.value=''; els.currency.value='EUR';
     els.sendTo.value=''; els.documentClass.value='External';
     els.issuedBy.value='Moscatelli\nVia dei Condotti 12\n00187 Roma, Italy\nVAT IT123456789\nfinance@moscatelli.com';
-    els.recipient.value=''; els.paymentMethod.value='Bank Transfer'; els.reference.value=''; els.purpose.value=''; els.notes.value=''; els.taxRate.value='22';
-    els.iban.value=''; els.paymentReference.value=els.invoiceNumber.value; els.authorisedBy.value=''; els.authorisedRole.value=''; items=[{description:'',quantity:1,unitPrice:0}];
+    els.recipient.value=''; els.paymentMethod.value='Bank Transfer'; els.reference.value=''; els.notes.value=''; els.taxRate.value='22';
+    els.iban.value='IT30P0306939170100000007557'; els.paymentReference.value=els.invoiceNumber.value; els.authorisedBy.value='Gianluca Moscatelli'; els.authorisedRole.value=''; items=[{description:'',quantity:1,unitPrice:0}];
     renderItems(); updateAll(); toast('Generator reset.');
   }
 

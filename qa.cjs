@@ -43,11 +43,11 @@ let browser;
  });
  await check('Generate state becomes stale after edits',async()=>{await generate();assert.match(await text('readyLabel'),/Generated/);await fill('invoiceNumber','QA-2026-001');assert.match(await text('readyLabel'),/not generated/);assert.equal(await text('previewPaymentReference'),'QA-2026-001');});
  await p.locator('.additional-details').evaluate(e=>e.open=true);
- await check('Party, purpose, notes and payment fields update',async()=>{
-  for(const[id,preview,value]of[['issuedBy','previewIssuedBy','Moscatelli\nVia Roma 12\nRoma, Italy'],['recipient','previewRecipient','QA Client\nVia Milano 8\nMilano, Italy'],['purpose','previewPurpose','Consultancy & creative services'],['notes','previewNotes','Thank you.\nPayment within 30 days.'],['iban','previewIban','IT00 1234 5678 9012 3456 7890'],['authorisedBy','previewAuthorisedBy','Lorenzo Moscatelli'],['authorisedRole','previewAuthorisedRole','Managing Director'],['paymentReference','previewPaymentReference','CUSTOM-REF']]){await fill(id,value);assert((await text(preview)).includes(value.replace(/\n/g,'')) || (await text(preview))===value || ['issuedBy','recipient'].includes(id));}
+ await check('Party, notes and payment fields update',async()=>{
+  for(const[id,preview,value]of[['issuedBy','previewIssuedBy','Moscatelli\nVia Roma 12\nRoma, Italy'],['recipient','previewRecipient','QA Client\nVia Milano 8\nMilano, Italy'],['notes','previewNotes','Thank you.\nPayment within 30 days.'],['iban','previewIban','IT30P0306939170100000007557'],['authorisedBy','previewAuthorisedBy','Gianluca Moscatelli'],['authorisedRole','previewAuthorisedRole','Managing Director'],['paymentReference','previewPaymentReference','CUSTOM-REF']]){await fill(id,value);assert((await text(preview)).includes(value.replace(/\n/g,'')) || (await text(preview))===value || ['issuedBy','recipient'].includes(id));}
   await select('paymentMethod','Cash');assert.equal(await text('previewPaymentMethod'),'Cash');
   await fill('invoiceNumber','QA-2026-002');assert.equal(await text('previewPaymentReference'),'CUSTOM-REF');
-  await fill('reference','Fallback purpose');await fill('purpose','');assert.equal(await text('previewPurpose'),'Fallback purpose');
+
  });
  await check('Statuses and Date Paid validation',async()=>{
   await select('status','Paid');assert(await p.locator('#datePaid').inputValue());await fill('datePaid','');await generate();assert.doesNotMatch(await text('readyLabel'),/Generated/);

@@ -57,7 +57,7 @@ Drafts and archives are stored only in the current browser via `localStorage`. C
 ## Using the generator
 
 - Edit the document on the left; the right-hand pages update automatically. On smaller screens use **Edit / Preview**.
-- Open **Delivery & Additional Details** for Send To, Date Paid, document class, purpose, payment reference, account and authorisation. Selecting Paid opens these details automatically.
+- Open **Delivery & Additional Details** for Send To, Date Paid, document class, payment reference, account and authorisation. Selecting Paid opens these details automatically.
 - Generate validates required parties, document reference, dates, email, line items and VAT. An edit returns the document to an ungenerated state; the selected Draft/Issued/Paid/Void status is preserved.
 - The **•••** menu contains Print / Save as PDF, Open Archive, Save to Archive, Duplicate and Reset. The header archive shortcut also works on mobile.
 - Archive Open restores a document for editing; Save updates that same record. Duplicate creates a separate draft with an available reference.
