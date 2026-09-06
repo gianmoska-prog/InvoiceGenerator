@@ -11,9 +11,16 @@ let browser;
  await fs.mkdir(out,{recursive:true});
  browser=await chromium.launch({channel:'msedge',headless:true});
  const context=await browser.newContext({viewport:{width:1448,height:1086},acceptDownloads:true});
- const p=await context.newPage(); const errors=[]; const failures=[]; const checks=[];
+ const p=await context.newPage(); const errors=[]; const failures=[]; const checks=[]; let unrelatedNavigationAborts=0;
  p.on('pageerror',e=>errors.push(e.message));
- p.on('requestfailed',r=>{if(/^https?:/.test(r.url()))failures.push(r.url());});
+ p.on('requestfailed',r=>{
+  if(!/^https?:/.test(r.url()))return;
+  // Some local browser/network environments inject a script outside the project URL.
+  // Its fetch is cancelled on navigation; retain the count separately from app failures.
+  if(r.resourceType()==='fetch' && r.failure()?.errorText==='net::ERR_ABORTED' && !r.url().startsWith(url)){unrelatedNavigationAborts++;return;}
+  failures.push(r.url());
+ });
+ p.on('response',r=>{if(r.url().startsWith(url)&&r.status()>=400)failures.push(`${r.status()} ${r.url()}`);});
  p.on('dialog',d=>d.accept());
  async function check(name,fn){await fn(); checks.push(name); console.log('PASS',name);}
  const fill=async(id,value)=>{await p.locator('#'+id).fill(String(value));await p.waitForTimeout(40);};
@@ -107,6 +114,6 @@ let browser;
   const c=await browser.newContext();await c.addInitScript(()=>{Storage.prototype.getItem=()=>{throw new Error('blocked')};Storage.prototype.setItem=()=>{throw new Error('blocked')};});const q=await c.newPage();const e=[];q.on('pageerror',x=>e.push(x.message));await q.goto(url);await q.waitForTimeout(600);assert.equal(await q.locator('#previewTotal').textContent(),'€ 6,466.00');assert.match(await q.locator('#autosaveStatus').textContent(),/unavailable/);assert.deepEqual(e,[]);await c.close();
  });
  assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);
- await fs.writeFile(path.join(out,'results.json'),JSON.stringify({url,checks,errors,failures},null,2));
+ await fs.writeFile(path.join(out,'results.json'),JSON.stringify({url,checks,errors,failures,unrelatedNavigationAborts},null,2));
  await browser.close();console.log('ALL',checks.length,'CHECKS PASSED');
 })().catch(async e=>{console.error(e);if(browser)await browser.close();process.exitCode=1;});
