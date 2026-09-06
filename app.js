@@ -262,7 +262,8 @@
         host.replaceChildren(page);
         // Render an unscaled, scroll-independent page. html2pdf's default container is
         // wider than the live sheet and its automatic slicing clips scaled previews.
-        const worker=html2pdf().set({margin:0,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2.5,width:625,height:884,scrollX:0,scrollY:0,windowWidth:1448,windowHeight:1086,backgroundColor:'#ffffff',logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},pagebreak:{mode:[]}}).from(page).toContainer();
+        // 3750 × 5304 pixels per A4 page (~454 dpi), with lossless text/line edges.
+        const worker=html2pdf().set({margin:0,image:{type:'png'},html2canvas:{scale:6,width:625,height:884,scrollX:0,scrollY:0,windowWidth:1448,windowHeight:1086,backgroundColor:'#ffffff',logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},pagebreak:{mode:[]}}).from(page).toContainer();
         const container=await worker.get('container');
         Object.assign(container.style,{left:'0',right:'auto',top:'0',margin:'0',width:'625px'});
         await worker.toCanvas();
@@ -273,7 +274,7 @@
           for(let n=pdf.internal.getNumberOfPages();n>=1;n--) pdf.deletePage(n);
         }
         pdf.addPage('a4','portrait');
-        pdf.addImage(canvas.toDataURL('image/jpeg',0.98),'JPEG',0,0,210,297);
+        pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,0,210,297,undefined,'FAST');
       }
       pdf.save(filename);
       if(!silent) toast('PDF downloaded.');

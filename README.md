@@ -66,7 +66,7 @@ Drafts and archives are stored only in the current browser via `localStorage`. C
 
 The original HTML renderer and html2pdf engine are retained. Export now measures and paginates fixed A4 sheets, renders each through an unscaled, explicitly positioned export container, and places each complete image onto an A4 PDF page. This avoids the original offset/clipping defect and mobile zoom errors. Table headings repeat, rows stay together and page numbers reflect the full document. Browser print uses the same pages with application controls excluded.
 
-Download PDFs are raster documents; use **Print / Save as PDF** for selectable text. For browser print choose A4, 100% scale and disable browser headers/footers. Extremely long individual text blocks or single rows that cannot fit one page must be shortened; Generate reports this instead of silently exporting clipped content. Currency switching changes denomination/formatting only; it does not convert exchange rates.
+Download PDFs use lossless PNG pages at 3750 × 5304 pixels (approximately 454 dpi), preserving sharper text and lines when zoomed. They remain raster documents; use **Print / Save as PDF** for selectable text. For browser print choose A4, 100% scale and disable browser headers/footers. Extremely long individual text blocks or single rows that cannot fit one page must be shortened; Generate reports this instead of silently exporting clipped content. Currency switching changes denomination/formatting only; it does not convert exchange rates.
 
 ## Audit
 
