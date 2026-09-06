@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#181716" />
+  <title>Moscatelli — Invoice Generator</title>
+  <meta name="description" content="Moscatelli private financial instrument generator." />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-lockup" aria-label="Moscatelli Roma">
+        <span class="brand-name">MOSCATELLI</span><span class="brand-roma">ROMA</span>
+      </div>
+      <div class="topbar-meta">FINANCIAL INSTRUMENTS <span>/</span> DOCUMENTS <span>/</span> ARCHIVE</div>
+      <div class="topbar-actions">
+        <button class="icon-button" id="searchButton" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.3 4.3"></path></svg></button>
+        <div class="profile-medallion" title="Lorenzo Moscatelli">LM</div>
+      </div>
+    </header>
+
+    <aside class="sidebar" aria-label="Primary navigation">
+      <nav class="side-nav">
+        <button class="nav-item" data-view="dashboard"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3"/><path d="M6 21v-4a6 6 0 0 1 12 0v4M4 21h16"/></svg></span><span>Dashboard</span></button>
+        <button class="nav-item active" data-view="invoice"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l4 4v16H6zM14 2v5h4M9 11h6M9 15h6M9 18h4"/></svg></span><span>Invoices</span></button>
+        <button class="nav-item" data-view="payment"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M8 7h8M8 11h8M8 15h5M8 18h5"/></svg></span><span>Payment Records</span></button>
+        <button class="nav-item" data-view="clients"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M3 21v-4a6 6 0 0 1 12 0v4M16 4a3 3 0 0 1 0 6M18 13a5 5 0 0 1 3 5v3"/></svg></span><span>Clients</span></button>
+        <button class="nav-item" data-view="products"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="14" rx="1"/><path d="M8 7V3h8v4M3 12h18"/></svg></span><span>Products &amp; Services</span></button>
+        <button class="nav-item" data-view="archive"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7"/></svg></span><span>Archive</span></button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="footer-rule"></div>
+        <div class="motto">Quod durat,<br>sufficit.</div>
+        <div class="footer-brand">MOSCATELLI <span>ROMA</span></div>
+      </div>
+    </aside>
+
+    <main class="workspace" id="workspace">
+      <section class="editor-panel" id="editorPanel">
+        <div class="editor-heading">
+          <div>
+            <h1>INVOICE GENERATOR</h1>
+            <p>Create elegant, professional payment documents in seconds.</p>
+          </div>
+          <div class="editor-manifesto">SIMPLE.<br>ACCURATE.<br>DISTINCTIVE.</div>
+        </div>
+
+        <form id="invoiceForm" novalidate>
+          <section class="form-section">
+            <h2>DOCUMENT DETAILS</h2>
+            <div class="form-grid three">
+              <label>Document Type
+                <select id="documentType" name="documentType">
+                  <option value="Invoice">Invoice</option>
+                  <option value="Payment Record">Payment Record</option>
+                  <option value="Quotation">Quotation</option>
+                  <option value="Pro-forma Invoice">Pro-forma Invoice</option>
+                  <option value="Expense Record">Expense Record</option>
+                  <option value="Purchase Order">Purchase Order</option>
+                  <option value="Deposit Request">Deposit Request</option>
+                </select>
+              </label>
+              <label>Status
+                <select id="status" name="status">
+                  <option value="Draft">Draft</option>
+                  <option value="Issued" selected>Issued</option>
+                  <option value="Paid">Paid</option>
+                  <option value="Void">Void</option>
+                </select>
+              </label>
+              <label id="numberLabel">Invoice Number
+                <input id="invoiceNumber" name="invoiceNumber" value="MOS-2026-0017" required />
+              </label>
+              <label>Issue Date
+                <input id="issueDate" name="issueDate" type="date" required />
+              </label>
+              <label>Due Date
+                <input id="dueDate" name="dueDate" type="date" />
+              </label>
+              <label>Currency
+                <select id="currency" name="currency">
+                  <option value="EUR" selected>EUR (€)</option>
+                  <option value="GBP">GBP (£)</option>
+                  <option value="USD">USD ($)</option>
+                  <option value="CHF">CHF</option>
+                  <option value="BRL">BRL (R$)</option>
+                </select>
+              </label>
+            </div>
+</section>
+
+          <section class="form-section">
+            <h2>PARTIES</h2>
+            <div class="form-grid two">
+              <label>Issued By (Your Company)
+                <textarea id="issuedBy" name="issuedBy" rows="5">Moscatelli
+Via dei Condotti 12
+00187 Roma, Italy
+VAT IT123456789
+finance@moscatelli.com</textarea>
+              </label>
+              <label id="recipientLabel">Client / Recipient
+                <textarea id="recipient" name="recipient" rows="5">Atelier Bianchi S.r.l.
+Via Manzoni 8
+20121 Milano, Italy
+VAT IT987654321
+clienti@atelierbianchi.it</textarea>
+              </label>
+            </div>
+          </section>
+
+          <section class="form-section">
+            <h2>PAYMENT &amp; REFERENCE</h2>
+            <div class="form-grid two">
+              <label>Payment Method
+                <select id="paymentMethod" name="paymentMethod">
+                  <option>Bank Transfer</option>
+                  <option>Credit / Debit Card</option>
+                  <option>Cash</option>
+                  <option>PayPal</option>
+                  <option>Other</option>
+                </select>
+              </label>
+              <label>Reference (Optional)
+                <input id="reference" name="reference" value="Consultancy - Spring Collection 2026" />
+              </label>
+
+            </div>
+          </section>
+
+          <section class="form-section items-section">
+            <h2>ITEMS / SERVICES</h2>
+            <div class="item-headings" aria-hidden="true">
+              <span>DESCRIPTION</span><span>QTY</span><span>UNIT PRICE</span><span>AMOUNT</span><span></span>
+            </div>
+            <div id="itemsContainer"></div>
+            <button type="button" class="add-item" id="addItem"><span>＋</span> Add Item</button>
+
+            <div class="notes-total-row">
+              <label>Notes (Optional)
+                <textarea id="notes" name="notes" rows="4">Thank you for your continued trust.
+Payment within 30 days.</textarea>
+              </label>
+              <div class="totals-card form-totals">
+                <div><span>Subtotal</span><strong id="subtotalForm">€ 0.00</strong></div>
+                <label class="tax-row"><span>VAT (<input id="taxRate" type="number" min="0" max="100" step="0.1" value="22" aria-label="VAT percentage">%)</span><strong id="taxForm">€ 0.00</strong></label>
+                <div class="total-line"><span>Total</span><strong id="totalForm">€ 0.00</strong></div>
+              </div>
+            </div>
+          </section>
+
+          <details class="additional-details">
+            <summary>Delivery &amp; Additional Details</summary>
+<div class="form-grid three status-row">
+              <label class="paid-date-field">Date Paid
+                <input id="datePaid" name="datePaid" type="date" />
+              </label>
+              <label>Send To (email address)
+                <input id="sendTo" name="sendTo" type="email" value="clienti@atelierbianchi.it" placeholder="accounts@company.com" />
+              </label>
+              <label>Document Class
+                <select id="documentClass" name="documentClass">
+                  <option value="External" selected>External</option>
+                  <option value="Internal">Internal</option>
+                  <option value="Confidential">Confidential</option>
+                </select>
+              </label>
+            </div>
+          
+            <div class="form-grid two detail-body">
+              <label class="span-two">Purpose
+                <input id="purpose" name="purpose" value="Strategic consultancy and creative services – Spring Collection 2026" />
+              </label>
+              <label>IBAN / Account
+                <input id="iban" value="IT00 1234 5678 9012 3456 7890" />
+              </label>
+              <label>Payment Reference
+                <input id="paymentReference" value="MOS-2026-0017" />
+              </label>
+              <label>Authorised By
+                <input id="authorisedBy" value="Lorenzo Moscatelli" />
+              </label>
+              <label>Role / Title
+                <input id="authorisedRole" value="Managing Director" />
+              </label>
+            </div>
+          </details>
+
+          <div class="editor-actions">
+            <button type="submit" class="generate-button"><span id="generateLabel">Generate Invoice</span> <span aria-hidden="true">→</span></button>
+            <div class="secondary-actions">
+              <button type="button" id="previewButton">◉ <span>Preview</span></button>
+              <button type="button" id="sendButton">✉ <span>Send</span></button>
+              <button type="button" id="downloadButton">⇩ <span>Download</span></button>
+              
+              <button type="button" id="moreButton" aria-expanded="false">•••</button>
+              <div class="more-menu" id="moreMenu">
+                <button type="button" id="printButton">Print / Save as PDF</button>
+                <button type="button" id="openArchiveButton">Open Archive</button>
+                <button type="button" id="archiveButton">Save to Archive</button>
+                <button type="button" id="duplicateButton">Duplicate Document</button>
+                <button type="button" id="resetButton">Reset Generator</button>
+              </div>
+            </div>
+          </div>
+          <p class="send-help">Send downloads the PDF and opens your email app. Attach the file manually.</p>
+          <div class="autosave-status" id="autosaveStatus">Saved locally</div>
+        </form>
+      </section>
+
+      <section class="preview-panel" id="previewPanel">
+        <div class="preview-topline">
+          <span>LIVE PREVIEW</span>
+          <span class="ready-status"><span id="readyLabel">Ready to send</span><i></i></span>
+        </div>
+        <div class="paper-stage" id="documentPages" aria-label="A4 document preview"></div>
+        <div class="document-source" aria-hidden="true">
+          <article class="invoice-sheet" id="invoiceSheet">
+            <div class="doc-top">
+              <div class="doc-brand">MOSCATELLI <small>ROMA</small></div>
+              <div class="doc-class-top">FINANCIAL INSTRUMENT / MASTER</div>
+            </div>
+            <div class="oxblood-rule"></div>
+
+            <div class="doc-title-row">
+              <div>
+                <h3 id="previewTitle">INVOICE</h3>
+                <p id="previewSubtitle">Invoice / Payment Record / Consultancy / Professional Services</p>
+              </div>
+              <div class="document-value">
+                <span>DOCUMENT VALUE</span>
+                <strong id="previewGrandTotal">€ 0.00</strong>
+                <em id="previewStatus">[ISSUED]</em>
+              </div>
+            </div>
+
+            <div class="doc-meta-grid">
+              <div><span>REFERENCE</span><strong id="previewNumber">MOS-2026-0017</strong></div>
+              <div><span>ISSUE DATE</span><strong id="previewIssueDate"></strong></div>
+              <div><span>DUE DATE</span><strong id="previewDueDate"></strong></div>
+              <div><span>CURRENCY</span><strong id="previewCurrency">EUR</strong></div>
+            </div>
+
+            <div class="party-card">
+              <div><span>ISSUED BY</span><div id="previewIssuedBy"></div></div>
+              <div><span id="previewPartyHeading">TO</span><div id="previewRecipient"></div></div>
+            </div>
+
+            <div class="purpose-block"><span>PURPOSE</span><p id="previewPurpose"></p></div>
+
+            <table class="doc-items">
+              <thead><tr><th>NO.</th><th>DESCRIPTION</th><th>QTY</th><th>UNIT</th><th>AMOUNT</th></tr></thead>
+              <tbody id="previewItems"></tbody>
+            </table>
+
+            <div class="doc-lower-grid">
+              <div class="doc-note"><span>NOTE</span><p id="previewNotes"></p></div>
+              <div class="doc-totals">
+                <div><span>SUBTOTAL</span><strong id="previewSubtotal"></strong></div>
+                <div><span id="previewTaxLabel">VAT (22%)</span><strong id="previewTax"></strong></div>
+                <div class="final"><span>TOTAL</span><strong id="previewTotal"></strong></div>
+              </div>
+            </div>
+
+            <div class="payment-strip">
+              <div><span>PAYMENT METHOD</span><strong id="previewPaymentMethod"></strong></div>
+              <div><span>PAYMENT REFERENCE</span><strong id="previewPaymentReference"></strong></div>
+              <div><span>IBAN / ACCOUNT</span><strong id="previewIban"></strong></div>
+            </div>
+
+            <div class="authorisation-row">
+              <div><span>AUTHORISED BY</span><strong id="previewAuthorisedBy"></strong><p id="previewAuthorisedRole"></p></div>
+              <div class="paid-stamp" id="paidStamp" hidden><span>PAID</span><small id="previewPaidDate"></small></div>
+              <div class="doc-class-bottom"><span>DOCUMENT CLASS</span><strong id="previewDocumentClass">[EXTERNAL]</strong></div>
+            </div>
+
+
+
+            <footer class="doc-footer">
+              <div>MOSCATELLI <small>ROMA</small></div>
+              <div>Quod durat, sufficit.</div>
+              <div>PAGE 1 / 1</div>
+            </footer>
+          </article>
+        </div>
+      </section>
+
+      <section class="archive-view hidden" id="archiveView">
+        <div class="archive-header"><div><h1>DOCUMENT ARCHIVE</h1><p>Locally preserved Moscatelli financial instruments.</p></div><button id="backToGenerator">← Return to Generator</button></div>
+        <div class="archive-table-wrap">
+          <table class="archive-table">
+            <thead><tr><th>REFERENCE</th><th>TYPE</th><th>RECIPIENT / PAYEE</th><th>DATE</th><th>VALUE</th><th>STATUS</th><th></th></tr></thead>
+            <tbody id="archiveTableBody"></tbody>
+          </table>
+          <div class="archive-empty" id="archiveEmpty">No archived documents yet.</div>
+        </div>
+      </section>
+
+      <section class="placeholder-view hidden" id="placeholderView">
+        <div><span id="placeholderEyebrow">MOSCATELLI</span><h1 id="placeholderTitle">DASHBOARD</h1><p id="placeholderText">This module is prepared for a later development phase.</p><button id="placeholderReturn">Open Invoice Generator</button></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="mobile-switcher" aria-label="Mobile view switcher"><button class="active" data-mobile-view="edit">Edit</button><button data-mobile-view="preview">Preview</button></div>
+
+  <script src="vendor/html2pdf.bundle.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+You are receiving an existing first implementation of the MOSCATELLI Invoice Generator. Do NOT rebuild it from scratch.
+
+Repository to use and deploy:
+https://github.com/gianmoska-prog/InvoiceGenerator
+
+The supplied project already contains the HTML/CSS/JavaScript application, PDF workflow, local archive, calculations, responsive behaviour, GitHub Pages workflow and a copy of the intended visual reference at:
+
+docs/design-reference.png
+
+I will also attach the same design-reference image directly to this Codex task.
+
+YOUR ROLE
+
+Act as the finishing engineer and deployment owner.
+
+1. Inspect the existing implementation in full before changing anything.
+2. Compare it carefully, side by side, with the attached Moscatelli design reference.
+3. Preserve the current architecture unless there is a clear technical problem.
+4. Refine the existing front end so its desktop appearance is as close as reasonably possible to the supplied image.
+5. Do not reinterpret or modernise the design. The reference image is the design specification.
+6. Preserve the near-black header/sidebar, ivory workspace, oxblood accents, editorial typography, compact form proportions, left-hand generator, right-hand A4 live preview and restrained luxury character.
+7. Do not turn it into a generic SaaS interface, React dashboard or Bootstrap-like application.
+
+FUNCTIONAL AUDIT
+
+Verify and repair anything necessary so that all of the following work reliably:
+- document type switching
+- Invoice / Payment Record terminology changes
+- status switching
+- Date Paid
+- invoice/document number
+- issue and due dates
+- currency switching for EUR, GBP, USD, CHF and BRL
+- multiple line items
+- add/remove item
+- quantity × unit price
+- subtotal
+- VAT/tax percentage and amount
+- total
+- Issued By
+- Paid To / Client / Supplier recipient data
+- Send To email validation
+- purpose and notes
+- payment method/reference
+- IBAN/account
+- authorised by / role
+- live A4 preview
+- Generate Invoice validation and final state
+- Download PDF
+- browser Print / Save as PDF
+- Send workflow and its clearly stated browser attachment limitation
+- automatic local draft saving
+- Save to Archive
+- reopen archived document
+- delete archived document
+- duplicate document
+- reset generator
+- responsive Edit / Preview mobile behaviour
+
+PDF QUALITY
+
+Pay particular attention to PDF output. The exported document must contain only the clean financial document, at A4 proportions, with no application controls. Confirm that typography, spacing, totals and line items remain legible and visually faithful. If the existing html2pdf approach has a reproducible rendering defect, fix it with the smallest dependable change rather than unnecessarily rebuilding the application.
+
+VISUAL FIDELITY
+
+The current implementation was intentionally built to closely reproduce the supplied concept. Improve fidelity rather than replacing it.
+
+Compare, among other things:
+- exact major column proportions
+- header and sidebar dimensions
+- Moscatelli wordmark scale and letterspacing
+- left navigation density
+- INVOICE GENERATOR title hierarchy
+- section rules and field spacing
+- oxblood generate button
+- form item-row alignment
+- A4 paper size and position
+- invoice masthead
+- oxblood horizontal rule
+- oversized INVOICE title
+- document value placement
+- metadata row
+- issued-by/to ivory panel
+- black line-item header
+- totals panel
+- payment information strip
+- footer placement
+- Quod durat, sufficit. treatment
+
+Use the image as an exact visual target. Do not copy accidental artefacts or nonsensical sample text from it; preserve functional correctness.
+
+RESPONSIVENESS
+
+Desktop should remain the primary experience. Mobile must remain fully usable and must preserve the invoice as a scaled A4 document preview, using the existing Edit / Preview control rather than reflowing the financial document into a completely different design.
+
+TECHNOLOGY
+
+Keep the project static and inexpensive unless genuinely impossible:
+- HTML
+- CSS
+- vanilla JavaScript
+
+Do not introduce React, Next.js, Supabase, a Node backend or a build system merely for preference. Keep external dependencies minimal.
+
+DEPLOYMENT
+
+After refinement:
+1. Commit the finished files to gianmoska-prog/InvoiceGenerator on main.
+2. Configure/verify GitHub Pages deployment.
+3. Allow the included Pages workflow to run or repair it if needed.
+4. Open the actual production GitHub Pages URL.
+5. Test the production deployment, not merely localhost.
+6. Fix any relative-path, font, CDN, PDF, script or Pages issues that appear only in production.
+7. Confirm the final live URL and what you changed.
+
+Do not stop after writing code. Finish the repository and deployment.
