@@ -166,3 +166,5 @@ input[type=date],#invoiceNumber,#currency{font-family:var(--sans);font-size:12px
 @media(min-width:1001px){.editor-actions{flex-wrap:wrap}.secondary-actions{flex:1;justify-content:space-between}.generate-button{flex-basis:210px}}
 @media(max-width:680px){.email-notice{right:15px;bottom:78px}.secondary-actions>button{min-height:42px}}
 @media print{.email-notice{display:none!important}}
+
+.authorised-signature{display:block;width:150px;height:64px;object-fit:contain;object-position:left center;margin:3px 0 4px}.authorised-signature[hidden]{display:none}

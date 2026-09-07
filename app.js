@@ -141,6 +141,9 @@
     $('previewPaymentMethod').textContent = els.paymentMethod.value || '—';
     $('previewPaymentReference').textContent = els.paymentReference.value || els.invoiceNumber.value || '—';
     $('previewIban').textContent = els.iban.value || '—';
+    const useSignature = els.authorisedBy.value.trim().toLowerCase() === 'gianluca moscatelli';
+    $('previewSignature').hidden = !useSignature;
+    $('previewAuthorisedBy').hidden = useSignature;
     $('previewAuthorisedBy').textContent = els.authorisedBy.value || '—';
     $('previewAuthorisedRole').textContent = els.authorisedRole.value || '';
     $('previewDocumentClass').textContent = `[${els.documentClass.value.toUpperCase()}]`;
@@ -184,6 +187,7 @@
     const corrected={...data};
     if(corrected.authorisedBy === 'Lorenzo Moscatelli') corrected.authorisedBy='Gianluca Moscatelli';
     if(corrected.iban === 'IT00 1234 5678 9012 3456 7890') corrected.iban='IT30P0306939170100000007557';
+    if(corrected.authorisedBy === 'Gianluca Moscatelli' && (!corrected.authorisedRole || corrected.authorisedRole === 'Managing Director')) corrected.authorisedRole='Chief Executive Officer';
     delete corrected.purpose;
     return corrected;
   }
@@ -266,6 +270,7 @@
     toast('Preparing PDF…');
     try {
       await document.fonts.ready;
+      if(!$('previewSignature').hidden) await $('previewSignature').decode();
       paginatePreview();
       const pages=[...$('documentPages').children].map(page=>{ const copy=page.cloneNode(true); copy.style.zoom='1'; return copy; });
       document.body.appendChild(host);
@@ -524,7 +529,7 @@
     els.sendTo.value=''; els.documentClass.value='External';
     els.issuedBy.value='Moscatelli\nVia dei Condotti 12\n00187 Roma, Italy\nVAT IT123456789\nfinance@moscatelli.com';
     els.recipient.value=''; els.paymentMethod.value='Bank Transfer'; els.reference.value=''; els.notes.value=''; els.taxRate.value='22';
-    els.iban.value='IT30P0306939170100000007557'; els.paymentReference.value=els.invoiceNumber.value; els.authorisedBy.value='Gianluca Moscatelli'; els.authorisedRole.value=''; items=[{description:'',quantity:1,unitPrice:0}];
+    els.iban.value='IT30P0306939170100000007557'; els.paymentReference.value=els.invoiceNumber.value; els.authorisedBy.value='Gianluca Moscatelli'; els.authorisedRole.value='Chief Executive Officer'; items=[{description:'',quantity:1,unitPrice:0}];
     renderItems(); updateAll(); toast('Generator reset.');
   }
 
