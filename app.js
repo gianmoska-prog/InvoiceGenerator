@@ -142,6 +142,7 @@
     $('previewPaymentReference').textContent = els.paymentReference.value || els.invoiceNumber.value || '—';
     $('previewIban').textContent = els.iban.value || '—';
     const useSignature = els.authorisedBy.value.trim().toLowerCase() === 'gianluca moscatelli';
+    if(useSignature && /^(managing\s+director)?$/i.test(els.authorisedRole.value.trim())) els.authorisedRole.value='Chief Executive Officer';
     $('previewSignature').hidden = !useSignature;
     $('previewAuthorisedBy').hidden = useSignature;
     $('previewAuthorisedBy').textContent = els.authorisedBy.value || '—';
@@ -187,7 +188,7 @@
     const corrected={...data};
     if(corrected.authorisedBy === 'Lorenzo Moscatelli') corrected.authorisedBy='Gianluca Moscatelli';
     if(corrected.iban === 'IT00 1234 5678 9012 3456 7890') corrected.iban='IT30P0306939170100000007557';
-    if(corrected.authorisedBy === 'Gianluca Moscatelli' && (!corrected.authorisedRole || corrected.authorisedRole === 'Managing Director')) corrected.authorisedRole='Chief Executive Officer';
+    if(String(corrected.authorisedBy || '').trim().toLowerCase() === 'gianluca moscatelli' && /^(managing\s+director)?$/i.test(String(corrected.authorisedRole || '').trim())) corrected.authorisedRole='Chief Executive Officer';
     delete corrected.purpose;
     return corrected;
   }
