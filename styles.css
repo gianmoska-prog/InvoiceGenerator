@@ -160,3 +160,9 @@ input[type=date],#invoiceNumber,#currency{font-family:var(--sans);font-size:12px
 .doc-footer>div:first-child{white-space:nowrap}.doc-footer .brand-word{letter-spacing:.26em}
 .party-card{margin-bottom:16px}
 @media(max-width:400px){.brand-name{font-size:17px}.brand-roma{font-size:8px;margin-left:6px}}
+.email-notice{position:fixed;right:22px;bottom:22px;z-index:110;width:min(410px,calc(100vw - 30px));background:#faf8f4;border:1px solid #d7d0c7;border-left:3px solid var(--oxblood);padding:18px 24px 18px 18px;box-shadow:0 10px 32px #211f1d20;color:#38322e;font-family:var(--sans);font-size:12px;line-height:1.55}
+.email-notice[hidden]{display:none}.email-notice p{margin:0 12px 10px 0}.email-notice>button{position:absolute;right:6px;top:4px;background:none;border:0;font-size:20px;color:#716b65;min-width:30px;min-height:30px}.email-links{display:flex;gap:10px 18px;flex-wrap:wrap}.email-links a{color:var(--oxblood);text-underline-offset:3px}.gmail-connect{border:0;border-bottom:1px solid #b9a49d;background:none;color:var(--oxblood);font-family:var(--sans);font-size:10px;padding:6px 0;margin-top:5px}.gmail-connect[hidden]{display:none}.secondary-actions>button:disabled{opacity:.6;cursor:wait}
+.doc-title-row h3.long-title{font-size:30px}.payment-strip span{white-space:normal}
+@media(min-width:1001px){.editor-actions{flex-wrap:wrap}.secondary-actions{flex:1;justify-content:space-between}.generate-button{flex-basis:210px}}
+@media(max-width:680px){.email-notice{right:15px;bottom:78px}.secondary-actions>button{min-height:42px}}
+@media print{.email-notice{display:none!important}}

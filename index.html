@@ -161,6 +161,9 @@ Payment within 30 days.</textarea>
               <label>Send To (email address)
                 <input id="sendTo" name="sendTo" type="email" value="clienti@atelierbianchi.it" placeholder="accounts@company.com" />
               </label>
+              <label>Document / email language
+                <select id="language"><option value="en">English</option><option value="pt">Português</option><option value="it">Italiano</option></select>
+              </label>
               <label>Document Class
                 <select id="documentClass" name="documentClass">
                   <option value="External" selected>External</option>
@@ -190,7 +193,7 @@ Payment within 30 days.</textarea>
             <button type="submit" class="generate-button"><span id="generateLabel">Generate Invoice</span> <span aria-hidden="true">→</span></button>
             <div class="secondary-actions">
               <button type="button" id="previewButton">◉ <span>Preview</span></button>
-              <button type="button" id="sendButton">✉ <span>Send</span></button>
+              <button type="button" id="sendButton">✉ <span id="prepareEmailLabel">Prepare email</span></button>
               <button type="button" id="downloadButton">⇩ <span>Download</span></button>
 
               <button type="button" id="moreButton" aria-expanded="false">•••</button>
@@ -203,7 +206,8 @@ Payment within 30 days.</textarea>
               </div>
             </div>
           </div>
-          <p class="send-help">Send downloads the PDF and opens your email app. Attach the file manually.</p>
+          <p class="send-help" id="emailHelp">Prepare a Gmail draft for review. Nothing is sent automatically.</p>
+          <button class="gmail-connect" id="gmailConnect" type="button" hidden>Connect Gmail</button>
           <div class="autosave-status" id="autosaveStatus">Saved locally</div>
         </form>
       </section>
@@ -300,10 +304,21 @@ Payment within 30 days.</textarea>
     </main>
   </div>
 
+  <aside class="email-notice" id="emailNotice" hidden aria-live="polite" aria-label="Email preparation">
+    <button type="button" id="emailClose" aria-label="Close">×</button>
+    <p id="emailNoticeText"></p>
+    <div class="email-links">
+      <a id="emailOpen" target="_blank" rel="noopener noreferrer" hidden>Open Gmail draft</a>
+      <a id="emailDownload" hidden>Download invoice PDF</a>
+      <a id="emailDrafts" target="_blank" rel="noopener noreferrer" hidden>Open Gmail Drafts</a>
+    </div>
+  </aside>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="mobile-switcher" aria-label="Mobile view switcher"><button class="active" data-mobile-view="edit">Edit</button><button data-mobile-view="preview">Preview</button></div>
 
   <script src="vendor/html2pdf.bundle.min.js"></script>
+  <script src="email-config.js"></script>
+  <script src="email.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -10,6 +10,9 @@
   let exporting = false;
   let layoutError = false;
   let generated = false;
+  let preparingEmail=false;
+  let lastEmail=null;
+  const Email=window.MoscatelliEmail;
 
   const $ = (id) => document.getElementById(id);
   const form = $('invoiceForm');
@@ -17,7 +20,7 @@
   const itemContainer = $('itemsContainer');
 
   const els = {
-    documentType: $('documentType'), status: $('status'), invoiceNumber: $('invoiceNumber'),
+    language: $('language'), documentType: $('documentType'), status: $('status'), invoiceNumber: $('invoiceNumber'),
     issueDate: $('issueDate'), dueDate: $('dueDate'), datePaid: $('datePaid'), currency: $('currency'),
     sendTo: $('sendTo'), documentClass: $('documentClass'), issuedBy: $('issuedBy'), recipient: $('recipient'),
     paymentMethod: $('paymentMethod'), reference: $('reference'), notes: $('notes'),
@@ -34,7 +37,7 @@
   function round2(n){ return Math.round((n + Number.EPSILON) * 100) / 100; }
   function money(n){
     const currency = els.currency.value || 'EUR';
-    const value = new Intl.NumberFormat('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}).format(round2(n));
+    const value = new Intl.NumberFormat(els.language.value === 'en' ? 'en-US' : Email.lang(els.language.value).locale, {minimumFractionDigits:2, maximumFractionDigits:2}).format(round2(n));
     return `${currencySymbol[currency] || currency} ${value}`;
   }
   function dateDisplay(value){ if(!value) return '—'; const [y,m,d] = value.split('-'); return `${d}.${m}.${y}`; }
@@ -158,6 +161,7 @@
     updateReady();
     cancelAnimationFrame(layoutFrame);
     layoutFrame = requestAnimationFrame(paginatePreview);
+    localizeDocument();
     scheduleAutosave();
   }
 
@@ -246,7 +250,7 @@
     return true;
   }
 
-  async function downloadPdf(silent=false){
+  async function downloadPdf(silent=false,returnFile=false){
     if(!generate()) return false;
     if(typeof html2pdf === 'undefined'){
       toast('PDF engine did not load. Use Print → Save as PDF.');
@@ -257,7 +261,7 @@
     document.querySelector('.app-shell').inert=true;
     const buttons=[$('downloadButton'),$('sendButton'),$('printButton')];
     buttons.forEach(b=>b.disabled=true);
-    const filename = `${(els.invoiceNumber.value || 'Moscatelli-Document').replace(/[^a-z0-9-_]/gi,'_')}.pdf`;
+    const filename = `MOSCATELLI-${els.documentType.value.replace(/[^a-z0-9-]/gi,'-')}-${els.invoiceNumber.value.replace(/[^a-z0-9-_]/gi,'_')}.pdf`;
     const host=document.createElement('div'); host.className='export-host';
     toast('Preparing PDF…');
     try {
@@ -284,22 +288,99 @@
         pdf.addPage('a4','portrait');
         pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,0,210,297,undefined,'FAST');
       }
+      const blob=pdf.output('blob');
+      if(returnFile) return {blob,filename};
       pdf.save(filename);
       if(!silent) toast('PDF downloaded.');
       return true;
-    } catch(err){ console.error(err); toast('PDF export failed. Use Print → Save as PDF.'); return false; }
-    finally { host.remove(); exporting=false; document.querySelector('.app-shell').inert=false; buttons.forEach(b=>b.disabled=false); }
+    } catch{ toast('PDF export failed. Use Print → Save as PDF.'); return false; }
+    finally { host.remove(); exporting=false; document.querySelector('.app-shell').inert=preparingEmail; buttons.forEach(b=>b.disabled=preparingEmail); }
   }
 
+  function localizeDocument(){
+    const l=Email.lang(els.language.value);
+    const index=[...els.documentType.options].findIndex(o=>o.value===els.documentType.value);
+    $('previewTitle').textContent=l.types[index].toUpperCase();
+    $('previewTitle').classList.toggle('long-title',$('previewTitle').textContent.length>10);
+    if(els.language.value!=='en') $('previewSubtitle').textContent=`${l.types[index]} / ${l.services}`;
+    $('invoiceSheet').lang=els.language.value;
+    $('previewStatus').textContent=`[${l.statuses[['Draft','Issued','Paid','Void'].indexOf(els.status.value)]}]`;
+    $('previewDocumentClass').textContent=`[${l.classes[['External','Internal','Confidential'].indexOf(els.documentClass.value)]}]`;
+    const selectors=['.doc-meta-grid>div:nth-child(1)>span','.doc-meta-grid>div:nth-child(2)>span','.doc-meta-grid>div:nth-child(3)>span','.doc-meta-grid>div:nth-child(4)>span','.party-card>div:first-child>span',null,null,null,'.doc-items th:nth-child(2)','.doc-items th:nth-child(3)','.doc-items th:nth-child(4)','.doc-items th:nth-child(5)','.doc-note>span','.doc-totals>div:first-child>span',null,'.doc-totals .final>span','.payment-strip>div:nth-child(1)>span','.payment-strip>div:nth-child(2)>span','.payment-strip>div:nth-child(3)>span','.authorisation-row>div:first-child>span','.doc-class-bottom>span','.document-value>span'];
+    selectors.forEach((selector,i)=>{if(selector){const el=$('invoiceSheet').querySelector(selector);if(el)el.textContent=l.labels[i];}});
+    $('previewPartyHeading').textContent=l.labels[['Payment Record','Expense Record'].includes(els.documentType.value)?6:els.documentType.value==='Purchase Order'?7:5];
+    $('previewTaxLabel').textContent=`${l.labels[14]} (${calculate().rate}%)`;
+    if(!preparingEmail) $('prepareEmailLabel').textContent=l.prepare;
+    $('emailHelp').textContent=l.help;
+    $('gmailConnect').hidden=!Email.configured();
+    $('gmailConnect').textContent=Email.connected()?l.disconnect:l.connect;
+  }
+
+  function emailNotice(message,data={}){
+    const l=Email.lang(data.language||els.language.value);
+    $('emailNotice').hidden=false; $('emailNoticeText').textContent=message;
+    $('emailClose').setAttribute('aria-label',l.close);
+    for(const[id,url,label]of [['emailOpen',data.url,l.open],['emailDownload',data.fileUrl,l.download],['emailDrafts',data.drafts?Email.draftsUrl():null,l.drafts]]){
+      const link=$(id);link.hidden=!url;link.textContent=label;if(url)link.href=url;else link.removeAttribute('href');
+    }
+    if(data.filename)$('emailDownload').download=data.filename;
+  }
+  function blankEmailTab(){
+    try{const tab=window.open('about:blank','_blank');if(tab){tab.opener=null;tab.document.title='MOSCATELLI';tab.document.body.textContent=Email.lang(els.language.value).preparing;}return tab;}catch{return null;}
+  }
+  function openEmailTab(tab,url){
+    try{if(tab&&!tab.closed){tab.location.replace(url);return true;}}catch{}
+    try{const opened=window.open(url,'_blank');if(opened){opened.opener=null;return true;}}catch{}
+    return false; // The visible retry link opens Gmail with a fresh user gesture.
+  }
   async function sendEmail(){
-    if(!validate()) return;
-    if(!els.sendTo.value){ focusInvalid(els.sendTo); toast('Add a Send To email address first.'); return; }
-    if(!await downloadPdf(true)) return;
-    const calc = calculate();
-    const subject = encodeURIComponent(`${els.documentType.value} ${els.invoiceNumber.value} — Moscatelli`);
-    const body = encodeURIComponent(`Dear Sir/Madam,\n\nPlease find attached ${els.documentType.value.toLowerCase()} ${els.invoiceNumber.value}, with a document value of ${money(calc.total)}.\n\nKind regards,\nMoscatelli\n\nNote: your browser cannot attach the downloaded PDF automatically. Please attach it to this email before sending.`);
-    window.location.href = `mailto:${encodeURIComponent(els.sendTo.value)}?subject=${subject}&body=${body}`;
-    toast('PDF downloaded; your mail application is opening. Attach the PDF before sending.');
+    if(preparingEmail||exporting)return;
+    if(!validate())return;
+    if(!els.sendTo.value){focusInvalid(els.sendTo);toast('Add a Send To email address first.');return;}
+    const data={...collectData(),total:calculate().total};
+    const l=Email.lang(data.language);let message;
+    try{message=Email.template(data);}catch{toast(l.invalid);return;}
+    const {updatedAt,currentArchiveId,...stable}=data;
+    const key=JSON.stringify(stable);
+    if(lastEmail?.key===key){
+      const tab=blankEmailTab();openEmailTab(tab,lastEmail.url);
+      emailNotice(lastEmail.notice+' '+l.blocked,lastEmail);return;
+    }
+    const api=Email.configured();
+    // Start Google's popup synchronously from the click, before PDF rendering.
+    const needsAuth=api&&!Email.connected();
+    const auth=api?Email.authorize().then(()=>null,e=>e):Promise.resolve(null);
+    const tab=needsAuth?null:blankEmailTab();
+    preparingEmail=true; $('sendButton').disabled=true; $('prepareEmailLabel').textContent=l.preparing;
+    emailNotice(l.preparing);let result=null;
+    try{
+      const file=await downloadPdf(true,true);if(!file)throw {code:'pdf'};
+      if(lastEmail?.fileUrl)URL.revokeObjectURL(lastEmail.fileUrl);
+      result={key,language:data.language,fileUrl:URL.createObjectURL(file.blob),filename:message.filename,url:Email.composeUrl(message),notice:l.fallback};
+      if(!api){
+        // A compose URL cannot attach files or force Gmail's From identity.
+        emailNotice(l.fallback+' '+l.blocked,result);$('emailDownload').click();openEmailTab(tab,result.url);lastEmail=result;return;
+      }
+      const authError=await auth;if(authError)throw authError;
+      $('prepareEmailLabel').textContent=l.creating;emailNotice(l.creating,result);
+      const draft=await Email.createDraft(data,file.blob,created=>{
+        result.url=Email.draftUrl(created.message.id);result.drafts=true;result.notice=l.uncertain;lastEmail=result;
+      });
+      result.url=draft.url;result.notice=l.success;result.drafts=true;lastEmail=result;
+      emailNotice(l.success+' '+l.blocked,result);openEmailTab(tab,result.url);
+    }catch(e){
+      if(tab&&!tab.closed)tab.close();
+      const code=e?.code||'failed';
+      if(result){
+        if(code==='uncertain'||code==='verify'){result.url=result.drafts?result.url:Email.draftsUrl();result.drafts=true;result.notice=l.uncertain;lastEmail=result;}
+        else result.notice=l[code]||l.failed;
+        emailNotice(result.notice,result);
+      }else emailNotice(l.pdf);
+    }finally{
+      preparingEmail=false;document.querySelector('.app-shell').inert=false;
+      [$('sendButton'),$('downloadButton'),$('printButton')].forEach(b=>b.disabled=false);
+      $('prepareEmailLabel').textContent=l.prepare;localizeDocument();
+    }
   }
 
   function getArchive(){ try { const data=JSON.parse(localStorage.getItem(ARCHIVE_KEY) || '[]'); if(!Array.isArray(data)) throw new Error('Invalid archive'); return data.filter(d=>d && typeof d==='object' && typeof d.id==='string').map(correctLegacyDefaults); } catch { toast('Local archive cannot be read. Existing storage has been preserved.'); return null; } }
@@ -381,14 +462,14 @@
     const copy=(node)=>{ const el=node.cloneNode(true); el.removeAttribute('id'); el.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id')); return el; };
     let page,footer;
     function newPage(continuation=false){
-      page=document.createElement('article'); page.className='invoice-sheet';
+      page=document.createElement('article'); page.className='invoice-sheet'; page.lang=els.language.value; page.lang=els.language.value;
       page.style.height='883.921875px'; page.style.overflow='hidden';
       host.appendChild(page); pages.push(page);
       footer=copy(source.querySelector('.doc-footer')); page.appendChild(footer);
       if(continuation){
         page.insertBefore(copy(source.querySelector('.doc-top')),footer);
         page.insertBefore(copy(source.querySelector('.oxblood-rule')),footer);
-        const label=document.createElement('p'); label.className='continuation-label'; label.textContent=`${els.documentType.value.toUpperCase()} · ${els.invoiceNumber.value} · CONTINUED`;
+        const label=document.createElement('p'); label.className='continuation-label'; label.textContent=`${$('previewTitle').textContent} · ${els.invoiceNumber.value} · ${Email.lang(els.language.value).labels[23]}`;
         page.insertBefore(label,footer);
       }
     }
@@ -410,7 +491,7 @@
         if(!fits()) { el.remove(); newPage(true); page.insertBefore(el,footer); if(!fits()) layoutError=true; }
       }
     });
-    pages.forEach((page,index)=>{ page.querySelector('.doc-footer>div:last-child').textContent=`PAGE ${index+1} / ${pages.length}`; page.setAttribute('aria-label',`Document page ${index+1} of ${pages.length}`); });
+    pages.forEach((page,index)=>{ page.querySelector('.doc-footer>div:last-child').textContent=`${Email.lang(els.language.value).labels[22]} ${index+1} / ${pages.length}`; page.setAttribute('aria-label',`Document page ${index+1} of ${pages.length}`); });
     $('documentPages').replaceChildren(...pages);
     host.remove(); fitPreview(); updateReady();
   }
@@ -438,7 +519,7 @@
   function resetDocument(){
     if(!confirm('Reset the generator and clear the current local draft?')) return;
     currentArchiveId=null; els.paymentReference.dataset.userChanged='';
-    els.documentType.value='Invoice'; els.status.value='Issued'; els.invoiceNumber.value=`MOS-${new Date().getFullYear()}-0017`;
+    els.language.value='en'; els.documentType.value='Invoice'; els.status.value='Issued'; els.invoiceNumber.value=`MOS-${new Date().getFullYear()}-0017`;
     els.issueDate.value=todayISO(); els.dueDate.value=offsetISO(30); els.datePaid.value=''; els.currency.value='EUR';
     els.sendTo.value=''; els.documentClass.value='External';
     els.issuedBy.value='Moscatelli\nVia dei Condotti 12\n00187 Roma, Italy\nVAT IT123456789\nfinance@moscatelli.com';
@@ -461,6 +542,8 @@
     $('downloadButton').addEventListener('click',()=>downloadPdf());
     $('printButton').addEventListener('click',()=>{ if(generate()) window.print(); });
     $('sendButton').addEventListener('click',sendEmail);
+    $('emailClose').addEventListener('click',()=>$('emailNotice').hidden=true);
+    $('gmailConnect').addEventListener('click',async()=>{const l=Email.lang(els.language.value);if(Email.connected()){Email.disconnect();localizeDocument();return;}try{await Email.authorize();emailNotice(l.connected);}catch{emailNotice(l.auth);}localizeDocument();});
     $('previewButton').addEventListener('click',()=>{setMobileView('preview'); $('previewPanel').scrollIntoView({behavior:'smooth',block:'start'});});
     $('archiveButton').addEventListener('click',archiveCurrent);
     $('duplicateButton').addEventListener('click',duplicateDocument);

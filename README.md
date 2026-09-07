@@ -46,9 +46,11 @@ Live application: https://gianmoska-prog.github.io/InvoiceGenerator/
 
 The project remains static HTML, CSS and vanilla JavaScript, with no build step or backend. Enable GitHub Pages with **GitHub Actions** as its source. Pushes to `main` run `.github/workflows/pages.yml`, which stages only the public application files and its local PDF dependency. All assets use relative paths. Typography uses Times/Arial system font families, removing third-party font requests.
 
-## Email limitation
+## Gmail drafts
 
-A static browser application cannot securely send email using hidden credentials, and `mailto:` cannot automatically attach a generated PDF. The Send action therefore validates the recipient, downloads the PDF, and opens a prepared local email for the user to attach the downloaded document manually. A transactional email backend can be integrated later without changing the document data model.
+**Prepare email** generates the high-resolution invoice PDF and prepares a Gmail message for `gianmoska@gmail.com`. With the default configuration it downloads the PDF, opens Gmail compose, and explicitly asks you to attach the PDF and select Finance Department as sender. Retry and download links remain available if popups are blocked.
+
+Optional Google authorisation enables automatic attachment and verified `Finance Department <finance@moscatelli.co>` drafts. Complete [the one-time setup](docs/gmail-setup.md). No email is sent by the app. Tokens stay in memory, with no client secret, backend or browser token storage. EN/PT/IT document and email language is selected in Delivery & Additional Details; user-entered text is preserved.
 
 ## Local storage
 
@@ -70,7 +72,7 @@ Download PDFs use lossless PNG pages at 3750 × 5304 pixels (approximately 454 d
 
 ## Audit
 
-With Playwright available, run `node qa.cjs`. `TEST_URL` selects localhost or the live Pages URL, `TEST_OUTPUT` selects an output directory, and `PLAYWRIGHT_MODULE` can point to an existing Playwright installation. The script uses installed Microsoft Edge, isolated browser storage and test data. It covers document types, statuses, dates, currencies, monetary rounding, items, validation, draft restoration, archive identity, duplication/deletion, Send, PDF, print, 30-item pagination, responsive widths from 320 to 1448 pixels, and unavailable storage. Send testing observes the prepared mailto request; no email is transmitted.
+With Playwright available, run `node qa.cjs`. `TEST_URL` selects localhost or the live Pages URL, `TEST_OUTPUT` selects an output directory, and `PLAYWRIGHT_MODULE` can point to an existing Playwright installation. The script uses installed Microsoft Edge, isolated browser storage and test data. It covers document types, statuses, dates, currencies, monetary rounding, items, validation, draft restoration, archive identity, duplication/deletion, Send, PDF, print, 30-item pagination, responsive widths from 320 to 1448 pixels, and unavailable storage. The separate `node email-qa.cjs` audit tests Gmail preparation and mocked OAuth/API responses without transmitting email.
 
 Dashboard, Clients and Products & Services remain the original clearly labelled future modules. This delivery completes the invoice/payment-document generator; it does not add a CRM or shared archive.
 

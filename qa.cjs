@@ -86,12 +86,7 @@ let browser;
  await check('PDF download and browser print produce files',async()=>{
   await pdf('desktop.pdf');await p.pdf({path:path.join(out,'print.pdf'),preferCSSPageSize:true,printBackground:true});
  });
- await check('Send downloads PDF and prepares mailto; failed export stops Send',async()=>{
-  const cdp=await context.newCDPSession(p);await cdp.send('Page.enable');const navigations=[];cdp.on('Page.frameRequestedNavigation',e=>navigations.push(e.url));
-  const d=p.waitForEvent('download');await p.click('#sendButton');await(await d).saveAs(path.join(out,'send.pdf'));await p.waitForTimeout(100);
-  assert(navigations.some(x=>x.startsWith('mailto:qa%40example.com?')&&x.includes('attach')));
-  await p.evaluate(()=>{window.savedEngine=window.html2pdf;window.html2pdf=undefined;});const count=navigations.length;await p.click('#sendButton');await p.waitForTimeout(100);assert.equal(navigations.length,count);await p.evaluate(()=>window.html2pdf=window.savedEngine);
- });
+ // Gmail preparation is covered separately by email-qa.cjs.
  await check('Long document paginates without losing rows or overflowing footer',async()=>{
   for(let i=0;i<27;i++){await p.click('#addItem');await p.locator('.description-input').last().fill('Additional service '+(i+1));await p.locator('.money-input').last().fill('12.50');}
   await p.waitForTimeout(100);assert(await p.locator('#documentPages>article').count()>1);assert.equal(await p.locator('#documentPages tbody tr').count(),30);
