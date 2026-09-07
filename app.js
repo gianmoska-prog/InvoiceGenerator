@@ -339,6 +339,22 @@
     try{const opened=window.open(url,'_blank');if(opened){opened.opener=null;return true;}}catch{}
     return false; // The visible retry link opens Gmail with a fresh user gesture.
   }
+  function advanceEmailReference(result){
+    const used=new Set((getArchive() || []).map(doc=>doc.invoiceNumber));
+    const increment=value=>value.replace(/(\d+)$/, digits=>String(BigInt(digits)+1n).padStart(digits.length,'0'));
+    const current=els.invoiceNumber.value;
+    let next=/\d$/.test(current)?increment(current):`${current}-0001`;
+    while(used.has(next)) next=increment(next);
+    currentArchiveId=null;
+    els.invoiceNumber.value=next;
+    els.paymentReference.value=next;
+    els.paymentReference.dataset.userChanged='';
+    els.status.value='Draft'; els.datePaid.value='';
+    updateAll(); saveDraft();
+    const label={en:'Next document reference',pt:'Referência do próximo documento',it:'Riferimento del prossimo documento'}[result.language] || 'Next document reference';
+    result.notice+=` ${label}: ${next}.`;
+  }
+
   async function sendEmail(){
     if(preparingEmail||exporting)return;
     if(!validate())return;
@@ -365,7 +381,7 @@
       result={key,language:data.language,fileUrl:URL.createObjectURL(file.blob),filename:message.filename,url:Email.composeUrl(message),notice:l.fallback};
       if(!api){
         // A compose URL cannot attach files or force Gmail's From identity.
-        emailNotice(l.fallback+' '+l.blocked,result);$('emailDownload').click();openEmailTab(tab,result.url);lastEmail=result;return;
+        advanceEmailReference(result);emailNotice(result.notice+' '+l.blocked,result);$('emailDownload').click();openEmailTab(tab,result.url);lastEmail=result;return;
       }
       const authError=await auth;if(authError)throw authError;
       $('prepareEmailLabel').textContent=l.creating;emailNotice(l.creating,result);
@@ -373,7 +389,7 @@
         result.url=Email.draftUrl(created.message.id);result.drafts=true;result.notice=l.uncertain;lastEmail=result;
       });
       result.url=draft.url;result.notice=l.success;result.drafts=true;lastEmail=result;
-      emailNotice(l.success+' '+l.blocked,result);openEmailTab(tab,result.url);
+      advanceEmailReference(result);emailNotice(result.notice+' '+l.blocked,result);openEmailTab(tab,result.url);
     }catch(e){
       if(tab&&!tab.closed)tab.close();
       const code=e?.code||'failed';

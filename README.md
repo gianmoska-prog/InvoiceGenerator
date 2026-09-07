@@ -80,3 +80,5 @@ Dashboard, Clients and Products & Services remain the original clearly labelled 
 
 - `docs/design-reference.png` contains the approved visual target for the application.
 - `CODEX_PROMPT.txt` is the recommended hand-off prompt for the finishing/deployment Codex run. The intended workflow is to refine this implementation rather than rebuild it.
+
+After successful email preparation, the editor advances the document number and payment reference together (for example, MOS-2026-0017 to MOS-2026-0018), skips locally archived numbers, and saves the next document as a draft. The prepared PDF and Gmail draft retain the original reference. Failed or uncertain preparation does not advance the number. Preparing an email does not confirm that it has been sent.
