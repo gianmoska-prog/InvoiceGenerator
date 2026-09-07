@@ -72,7 +72,7 @@ Download PDFs use lossless PNG pages at 3750 × 5304 pixels (approximately 454 d
 
 ## Audit
 
-With Playwright available, run `node qa.cjs`. `TEST_URL` selects localhost or the live Pages URL, `TEST_OUTPUT` selects an output directory, and `PLAYWRIGHT_MODULE` can point to an existing Playwright installation. The script uses installed Microsoft Edge, isolated browser storage and test data. It covers document types, statuses, dates, currencies, monetary rounding, items, validation, draft restoration, archive identity, duplication/deletion, Send, PDF, print, 30-item pagination, responsive widths from 320 to 1448 pixels, and unavailable storage. The separate `node email-qa.cjs` audit tests Gmail preparation and mocked OAuth/API responses without transmitting email.
+With Playwright available, run `node qa.cjs`. `TEST_URL` selects localhost or the live Pages URL, `TEST_OUTPUT` selects an output directory, and `PLAYWRIGHT_MODULE` can point to an existing Playwright installation. The script uses installed Microsoft Edge, isolated browser storage and test data. It covers document types, statuses, dates, currencies, monetary rounding, items, validation, draft restoration, archive identity, duplication/deletion, Send, PDF, print, 30-item pagination, responsive widths from 320 to 1448 pixels, and unavailable storage. The latest Gmail preparation changes were deployed without runtime testing at the owner's request.
 
 Dashboard, Clients and Products & Services remain the original clearly labelled future modules. This delivery completes the invoice/payment-document generator; it does not add a CRM or shared archive.
 

@@ -15,6 +15,6 @@ The browser-only Google Identity Services token model keeps short-lived access t
 
 PDF attachments are limited to 10 MB. Account/alias mismatches stop uploads. Failed or uncertain requests retain the PDF; after an uncertain creation, check Drafts before making another attempt. Repeated clicks reuse the same preparation while the page remains open. On mobile or if a specific-draft link fails, use **Open Gmail Drafts**. Popup-blocked users can use the visible retry link.
 
-Automated tests cover templates, PDF generation and mocked Google responses. Real account consent, sender verification and attachment read-back require completing the steps above and have not been claimed as tested before activation.
+This update was deployed without runtime tests at the owner's request. Real account consent, sender verification and attachment read-back require completing the steps above and remain unverified.
 
 References: [Google browser token model](https://developers.google.com/identity/oauth2/web/guides/use-token-model), [Gmail draft creation](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.drafts/create).
