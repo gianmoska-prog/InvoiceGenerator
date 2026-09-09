@@ -13,7 +13,7 @@ A static, production-oriented invoice and payment-document generator designed fo
 - Client/payee, Send To email and payment/reference fields
 - Local draft auto-save
 - Local archive with reopen/delete functionality
-- PDF download via a locally bundled, pinned `html2pdf.js` dependency
+- PDF download with embedded Times-compatible fonts, selectable text and vector rules
 - Consistent A4 pages on desktop, mobile, PDF and print, with continuation pages for long item lists
 - Print-optimised A4 CSS
 - Mail-client preparation workflow (browser security prevents silently attaching generated files)
@@ -24,8 +24,8 @@ A static, production-oriented invoice and payment-document generator designed fo
 - `index.html` — application shell and semantic markup
 - `styles.css` — full responsive visual system and print styling
 - `app.js` — form state, calculations, preview rendering, PDF workflow and local archive
-- `vendor/html2pdf.bundle.min.js` — pinned 0.10.1 client-side PDF engine and bundled dependencies
-- `vendor/html2pdf-LICENSE.txt` — upstream license
+- `pdf.js` — exports the paginated HTML document as text, vector rules and original image assets using locally bundled jsPDF 3.0.3
+- `assets/fonts/` — local Tinos fonts and OFL license; `vendor/jspdf-LICENSE.txt` — PDF engine license
 - `qa.cjs` — development-only Playwright browser audit; not shipped to Pages
 - `.github/workflows/pages.yml` — GitHub Pages deployment workflow
 - `.nojekyll` — prevents GitHub Pages/Jekyll processing
@@ -44,7 +44,7 @@ Then open `http://localhost:8000`.
 
 Live application: https://gianmoska-prog.github.io/InvoiceGenerator/
 
-The project remains static HTML, CSS and vanilla JavaScript, with no build step or backend. Enable GitHub Pages with **GitHub Actions** as its source. Pushes to `main` run `.github/workflows/pages.yml`, which stages only the public application files and its local PDF dependency. All assets use relative paths. Typography uses Times/Arial system font families, removing third-party font requests.
+The project remains static HTML, CSS and vanilla JavaScript, with no build step or backend. Enable GitHub Pages with **GitHub Actions** as its source. Pushes to `main` run `.github/workflows/pages.yml`, which stages only the public application files and its local PDF dependency. All assets use relative paths. Invoice typography uses locally hosted Tinos, a Times-compatible serif, with no third-party font requests.
 
 ## Gmail drafts
 
@@ -66,10 +66,9 @@ Drafts and archives are stored only in the current browser via `localStorage`. C
 
 ## PDF and print
 
-The original HTML renderer and html2pdf engine are retained. Export now measures and paginates fixed A4 sheets, renders each through an unscaled, explicitly positioned export container, and places each complete image onto an A4 PDF page. This avoids the original offset/clipping defect and mobile zoom errors. Table headings repeat, rows stay together and page numbers reflect the full document. Browser print uses the same pages with application controls excluded.
+The canonical design is `docs/invoice-reference.pdf`. Preview, export and print share the same measured A4 pages. The PDF exporter embeds Tinos fonts, preserves text and amounts as selectable text, draws rules as vectors, and embeds the supplied logo and signature at their original proportions. The document is exactly 210 × 297 mm; application controls are excluded. Long item lists use continuation pages with repeated table headings and page numbers.
 
-Download PDFs use lossless PNG pages at 3750 × 5304 pixels (approximately 454 dpi), preserving sharper text and lines when zoomed. They remain raster documents; use **Print / Save as PDF** for selectable text. For browser print choose A4, 100% scale and disable browser headers/footers. Extremely long individual text blocks or single rows that cannot fit one page must be shortened; Generate reports this instead of silently exporting clipped content. Currency switching changes denomination/formatting only; it does not convert exchange rates.
-
+For browser print choose A4, 100% scale and disable browser headers/footers. Extremely long individual text blocks or single rows that cannot fit one page must be shortened; Generate reports this instead of silently exporting clipped content. Currency switching changes denomination/formatting only; it does not convert exchange rates.
 ## Audit
 
 With Playwright available, run `node qa.cjs`. `TEST_URL` selects localhost or the live Pages URL, `TEST_OUTPUT` selects an output directory, and `PLAYWRIGHT_MODULE` can point to an existing Playwright installation. The script uses installed Microsoft Edge, isolated browser storage and test data. It covers document types, statuses, dates, currencies, monetary rounding, items, validation, draft restoration, archive identity, duplication/deletion, Send, PDF, print, 30-item pagination, responsive widths from 320 to 1448 pixels, and unavailable storage. The latest Gmail preparation changes were deployed without runtime testing at the owner's request.

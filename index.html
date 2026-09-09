@@ -7,7 +7,7 @@
   <title>Moscatelli — Invoice Generator</title>
   <meta name="description" content="Moscatelli private financial instrument generator." />
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=signature-ceo-2" />
+  <link rel="stylesheet" href="styles.css?v=stationery-1" />
 </head>
 <body>
   <div class="app-shell">
@@ -221,7 +221,7 @@ Payment within 30 days.</textarea>
         <div class="document-source" aria-hidden="true">
           <article class="invoice-sheet" id="invoiceSheet">
             <div class="doc-top">
-              <div class="doc-brand"><span class="brand-word">MOSCATELLI</span> <small>ROMA</small></div>
+              <div class="doc-brand"><img class="doc-wordmark" src="assets/moscatelli-roma.png" width="250" height="42" alt="MOSCATELLI ROMA" /></div>
               <div class="doc-class-top">FINANCIAL INSTRUMENT / MASTER</div>
             </div>
             <div class="oxblood-rule"></div>
@@ -279,7 +279,7 @@ Payment within 30 days.</textarea>
 
 
             <footer class="doc-footer">
-              <div><span class="brand-word">MOSCATELLI</span> <small>ROMA</small></div>
+              <div><img class="footer-wordmark" src="assets/moscatelli-roma.png" width="145" height="24" alt="MOSCATELLI ROMA" /></div>
               <div>Quod durat, sufficit.</div>
               <div>PAGE 1 / 1</div>
             </footer>
@@ -316,9 +316,10 @@ Payment within 30 days.</textarea>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="mobile-switcher" aria-label="Mobile view switcher"><button class="active" data-mobile-view="edit">Edit</button><button data-mobile-view="preview">Preview</button></div>
 
-  <script src="vendor/html2pdf.bundle.min.js"></script>
+  <script src="vendor/jspdf.umd.min.js"></script>
   <script src="email-config.js"></script>
   <script src="email.js"></script>
-  <script src="app.js?v=email-reference-1"></script>
+  <script src="pdf.js?v=stationery-1"></script>
+  <script src="app.js?v=stationery-1"></script>
 </body>
 </html>

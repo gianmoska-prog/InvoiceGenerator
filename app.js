@@ -257,7 +257,7 @@
 
   async function downloadPdf(silent=false,returnFile=false){
     if(!generate()) return false;
-    if(typeof html2pdf === 'undefined'){
+    if(!window.MoscatelliPDF || !window.jspdf){
       toast('PDF engine did not load. Use Print → Save as PDF.');
       return false;
     }
@@ -271,29 +271,11 @@
     toast('Preparing PDF…');
     try {
       await document.fonts.ready;
-      if(!$('previewSignature').hidden) await $('previewSignature').decode();
+      await Promise.all([...$('invoiceSheet').querySelectorAll('img')].filter(img=>!img.hidden).map(img=>img.decode()));
       paginatePreview();
       const pages=[...$('documentPages').children].map(page=>{ const copy=page.cloneNode(true); copy.style.zoom='1'; return copy; });
       document.body.appendChild(host);
-      let pdf;
-      for(const page of pages){
-        host.replaceChildren(page);
-        // Render an unscaled, scroll-independent page. html2pdf's default container is
-        // wider than the live sheet and its automatic slicing clips scaled previews.
-        // 3750 × 5304 pixels per A4 page (~454 dpi), with lossless text/line edges.
-        const worker=html2pdf().set({margin:0,image:{type:'png'},html2canvas:{scale:6,width:625,height:884,scrollX:0,scrollY:0,windowWidth:1448,windowHeight:1086,backgroundColor:'#ffffff',logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},pagebreak:{mode:[]}}).from(page).toContainer();
-        const container=await worker.get('container');
-        Object.assign(container.style,{left:'0',right:'auto',top:'0',margin:'0',width:'625px'});
-        await worker.toCanvas();
-        const canvas=await worker.get('canvas');
-        if(!pdf){
-          // Reuse the engine's jsPDF instance, but explicitly place each complete A4 page.
-          pdf=await worker.toPdf().get('pdf');
-          for(let n=pdf.internal.getNumberOfPages();n>=1;n--) pdf.deletePage(n);
-        }
-        pdf.addPage('a4','portrait');
-        pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,0,210,297,undefined,'FAST');
-      }
+      const pdf=await window.MoscatelliPDF.create(pages,host);
       const blob=pdf.output('blob');
       if(returnFile) return {blob,filename};
       pdf.save(filename);
@@ -308,13 +290,16 @@
     const index=[...els.documentType.options].findIndex(o=>o.value===els.documentType.value);
     $('previewTitle').textContent=l.types[index].toUpperCase();
     $('previewTitle').classList.toggle('long-title',$('previewTitle').textContent.length>10);
-    if(els.language.value!=='en') $('previewSubtitle').textContent=`${l.types[index]} / ${l.services}`;
+    $('previewSubtitle').textContent=l.services;
+    $('invoiceSheet').querySelector('.doc-class-top').textContent=`${l.types[index].toUpperCase()} / ${l.classes[['External','Internal','Confidential'].indexOf(els.documentClass.value)]}`;
     $('invoiceSheet').lang=els.language.value;
-    $('previewStatus').textContent=`[${l.statuses[['Draft','Issued','Paid','Void'].indexOf(els.status.value)]}]`;
+    $('previewStatus').textContent=l.statuses[['Draft','Issued','Paid','Void'].indexOf(els.status.value)];
     $('previewDocumentClass').textContent=`[${l.classes[['External','Internal','Confidential'].indexOf(els.documentClass.value)]}]`;
     const selectors=['.doc-meta-grid>div:nth-child(1)>span','.doc-meta-grid>div:nth-child(2)>span','.doc-meta-grid>div:nth-child(3)>span','.doc-meta-grid>div:nth-child(4)>span','.party-card>div:first-child>span',null,null,null,'.doc-items th:nth-child(2)','.doc-items th:nth-child(3)','.doc-items th:nth-child(4)','.doc-items th:nth-child(5)','.doc-note>span','.doc-totals>div:first-child>span',null,'.doc-totals .final>span','.payment-strip>div:nth-child(1)>span','.payment-strip>div:nth-child(2)>span','.payment-strip>div:nth-child(3)>span','.authorisation-row>div:first-child>span','.doc-class-bottom>span','.document-value>span'];
     selectors.forEach((selector,i)=>{if(selector){const el=$('invoiceSheet').querySelector(selector);if(el)el.textContent=l.labels[i];}});
     $('previewPartyHeading').textContent=l.labels[['Payment Record','Expense Record'].includes(els.documentType.value)?6:els.documentType.value==='Purchase Order'?7:5];
+    if(els.documentType.value==='Invoice') $('previewPartyHeading').textContent={en:'BILLED TO',pt:'FATURADO A',it:'FATTURATO A'}[els.language.value] || 'BILLED TO';
+    $('invoiceSheet').querySelector('.document-value>span').textContent={en:'TOTAL DUE',pt:'TOTAL A PAGAR',it:'TOTALE DOVUTO'}[els.language.value] || 'TOTAL DUE';
     $('previewTaxLabel').textContent=`${l.labels[14]} (${calculate().rate}%)`;
     if(!preparingEmail) $('prepareEmailLabel').textContent=l.prepare;
     $('emailHelp').textContent=l.help;
@@ -477,6 +462,8 @@
   function paginatePreview(){
     cancelAnimationFrame(layoutFrame);
     const source=$('invoiceSheet');
+    source.classList.toggle('compact-document',items.length>1);
+    source.classList.toggle('large-amounts',calculate().total>=100000);
     const pages=[];
     const host=document.createElement('div'); host.className='document-source';
     host.style.visibility='hidden'; document.body.appendChild(host);
@@ -484,7 +471,7 @@
     const copy=(node)=>{ const el=node.cloneNode(true); el.removeAttribute('id'); el.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id')); return el; };
     let page,footer;
     function newPage(continuation=false){
-      page=document.createElement('article'); page.className='invoice-sheet'; page.lang=els.language.value; page.lang=els.language.value;
+      page=document.createElement('article'); page.className=source.className; page.lang=els.language.value; page.lang=els.language.value;
       page.style.height='883.921875px'; page.style.overflow='hidden';
       host.appendChild(page); pages.push(page);
       footer=copy(source.querySelector('.doc-footer')); page.appendChild(footer);
@@ -495,7 +482,7 @@
         page.insertBefore(label,footer);
       }
     }
-    const fits=()=>footer.offsetTop+footer.offsetHeight <= page.clientHeight-35+1;
+    const fits=()=>footer.offsetTop+footer.offsetHeight <= page.clientHeight-parseFloat(getComputedStyle(page).paddingBottom)+1;
     newPage();
     [...source.children].filter(el=>!el.matches('.doc-footer') && !el.hidden).forEach(block=>{
       if(block.matches('.doc-items')){
@@ -513,7 +500,7 @@
         if(!fits()) { el.remove(); newPage(true); page.insertBefore(el,footer); if(!fits()) layoutError=true; }
       }
     });
-    pages.forEach((page,index)=>{ page.querySelector('.doc-footer>div:last-child').textContent=`${Email.lang(els.language.value).labels[22]} ${index+1} / ${pages.length}`; page.setAttribute('aria-label',`Document page ${index+1} of ${pages.length}`); });
+    pages.forEach((page,index)=>{ page.querySelector('.doc-footer>div:last-child').textContent=`${Email.lang(els.language.value).labels[22]} ${String(index+1).padStart(2,'0')} / ${String(pages.length).padStart(2,'0')}`; page.setAttribute('aria-label',`Document page ${index+1} of ${pages.length}`); });
     $('documentPages').replaceChildren(...pages);
     host.remove(); fitPreview(); updateReady();
   }
