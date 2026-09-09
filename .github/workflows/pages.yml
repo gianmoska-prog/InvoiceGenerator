@@ -28,7 +28,7 @@ jobs:
       - name: Stage public files
         run: |
           mkdir -p _site
-          cp index.html styles.css app.js pdf.js email.js email-config.js favicon.svg .nojekyll _site/
+          cp index.html styles.css app.js pdf.js email.js email-config.js contacts-bootstrap.js contacts.css favicon.svg .nojekyll _site/
           cp -R vendor assets _site/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
