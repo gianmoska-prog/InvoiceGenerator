@@ -67,7 +67,7 @@
       row.innerHTML = `
         <input class="description-input" aria-label="Item ${index+1} description" value="${escapeHtml(item.description)}">
         <input class="qty-input" aria-label="Item ${index+1} quantity" type="number" min="0" step="0.01" required value="${item.quantity}">
-        <input class="money-input" aria-label="Item ${index+1} unit price" type="number" min="0" step="0.01" required value="${item.unitPrice}">
+        <input class="money-input" aria-label="Item ${index+1} unit price" type="number" min="0" step="1" required value="${item.unitPrice}">
         <div class="line-total" aria-label="Item ${index+1} total">${money(item.quantity * item.unitPrice)}</div>
         <button class="remove-item" type="button" aria-label="Remove item ${index+1}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7"/></svg></button>`;
       const [desc, qty, price] = row.querySelectorAll('input');
